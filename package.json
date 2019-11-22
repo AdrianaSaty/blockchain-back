@@ -1,0 +1,22 @@
+{
+  "name": "blockchain-back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --watchAll"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdrianaSaty/blockchain-back.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AdrianaSaty/blockchain-back/issues"
+  },
+  "homepage": "https://github.com/AdrianaSaty/blockchain-back#readme",
+  "devDependencies": {
+    "jest": "^23.6.0"
+  }
+}
