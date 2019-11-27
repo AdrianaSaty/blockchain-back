@@ -18,5 +18,9 @@
   "homepage": "https://github.com/AdrianaSaty/blockchain-back#readme",
   "devDependencies": {
     "jest": "^23.6.0"
+  },
+  "dependencies": {
+    "hex-to-binary": "^1.0.1",
+    "save": "^2.4.0"
   }
 }
