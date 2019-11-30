@@ -18,6 +18,7 @@ const transactionMiner = new TransactionMiner({ blockchain, transactionPool, wal
 const DEFAULT_PORT = 3000;
 const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
 
+
 app.use(bodyParser.json());
 
 app.get('/api/blocks', (req, res) => {
@@ -87,6 +88,7 @@ const syncWithRootState = () => {
         if(!error && response.statusCode === 200) {
             const rootChain = JSON.parse(body);
             
+
             console.log('replace chain on a sync with', rootChain);
             blockchain.replaceChain(rootChain);
         }
@@ -116,3 +118,4 @@ app.listen(PORT, () => {
         syncWithRootState();
     }
 })
+
