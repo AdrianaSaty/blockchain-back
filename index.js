@@ -10,10 +10,12 @@ const TransactionMiner = require('./app/transaction-miner');
 const isDevelopment = process.env.ENV === 'development';
 
 const DEFAULT_PORT = 3000;
-const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
+const ROOT_NODE_ADDRESS = isDevelopment ?
+`http://localhost:${DEFAULT_PORT}`:
+'https://blotting.herokuapp.com';
 const REDIS_URL = isDevelopment ?
     'redis://127.0.0.1:6379' :
-    'redis://h:p8fefc5531dcf6000e3230cf6c78929ef8c8a4cf096e53dec7ff56d93acc9649b@ec2-52-205-156-44.compute-1.amazonaws.com:13289'
+    'redis://h:p8931111525e87bbc03f5e8d65a514116e29d9af4efd9b1a6fa65844244e78360@ec2-52-72-155-147.compute-1.amazonaws.com:23789'
 
 const app = express();
 const blockchain = new Blockchain();
