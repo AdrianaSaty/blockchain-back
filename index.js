@@ -8,18 +8,22 @@ const Wallet = require('./wallet');
 const TransactionMiner = require('./app/transaction-miner');
 
 const isDevelopment = process.env.ENV === 'development';
-const REDIS_URL = isDevelopment ?
-'redis://123.0.0.1:6379' :
-'redis://h:p6c881d54c4a2ba4a91d815f180d332a903711813232319086af8ceff09c43332@ec2-52-205-249-29.compute-1.amazonaws.com:13909';
+
 const DEFAULT_PORT = 3000;
-const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
+const ROOT_NODE_ADDRESS = isDevelopment ?
+`http://localhost:${DEFAULT_PORT}`:
+'https://powerful-basin-43291.herokuapp.com/';
+const REDIS_URL = isDevelopment ?
+    'redis://127.0.0.1:6379' :
+    'redis://h:p8fefc5531dcf6000e3230cf6c78929ef8c8a4cf096e53dec7ff56d93acc9649b@ec2-52-205-156-44.compute-1.amazonaws.com:13289'
 
 const app = express();
 const blockchain = new Blockchain();
 const wallet = new Wallet();
 const transactionPool = new TransactionPool();
-const pubsub = new PubSub({ blockchain, transactionPool, redisUrl: REDIS_URL  });
+const pubsub = new PubSub({ blockchain, transactionPool, redisUrl: REDIS_URL });
 const transactionMiner = new TransactionMiner({ blockchain, transactionPool, wallet, pubsub });
+
 
 
 app.use(bodyParser.json());
