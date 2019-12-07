@@ -6,6 +6,8 @@ const PubSub = require('./app/pubsub');
 const TransactionPool = require('./wallet/transaction-pool');
 const Wallet = require('./wallet');
 const TransactionMiner = require('./app/transaction-miner');
+const EC = require('elliptic').ec;
+const ec = new EC('secp256k1');
 
 const isDevelopment = process.env.ENV === 'development';
 
@@ -19,17 +21,40 @@ const REDIS_URL = isDevelopment ?
 
 const app = express();
 const blockchain = new Blockchain();
-const wallet = new Wallet();
 const transactionPool = new TransactionPool();
 const pubsub = new PubSub({ blockchain, transactionPool, redisUrl: REDIS_URL });
-const transactionMiner = new TransactionMiner({ blockchain, transactionPool, wallet, pubsub });
-
-
+let serverWallet = new Wallet();
+const transactionMiner = new TransactionMiner({ blockchain, transactionPool, serverWallet, pubsub });
 
 app.use(bodyParser.json());
 
 app.get('/api/blocks', (req, res) => {
     res.json(blockchain.chain);
+});
+
+app.get('/api/create-wallet', (req, res) => {
+    const wallet = new Wallet()
+    res.json({ 
+        privateKey: wallet.privateKey,
+        publicKey: wallet.publicKey,
+        balance: wallet.balance
+    });
+});
+
+app.post('/api/rebuild-wallet', (req, res) => {
+    const { privateKey } = req.body;
+    const wallet = new Wallet(privateKey)
+    let recoverWalletBalance = Wallet.calculateBalance({
+        chain: blockchain.chain,
+        address: wallet.publicKey
+    })
+    wallet.balance = recoverWalletBalance
+
+    res.json({
+        privatekey: wallet.privateKey,
+        publicKey: wallet.publicKey,
+        balance: wallet.balance
+    })
 });
 
 app.post('/api/mine', (req, res) => {
@@ -43,7 +68,9 @@ app.post('/api/mine', (req, res) => {
 });
 
 app.post('/api/transact', (req, res) => {
-    const { amount, recipient } = req.body;
+    const { amount, recipient, privateKey } = req.body;
+
+    const wallet = new Wallet(privateKey)
 
     let transaction = transactionPool
         .existingTransaction({ inputAddress: wallet.publicKey });
@@ -62,7 +89,6 @@ app.post('/api/transact', (req, res) => {
         return res.status(400).json({ type: 'error', message: error.message });
     }
 
-
     transactionPool.setTransaction(transaction);
 
     pubsub.broadcastTransaction(transaction);
@@ -80,8 +106,9 @@ app.get('/api/mine-transactions', (req, res) => {
     res.redirect('/api/blocks');
 });
 
-app.get('/api/wallet-info', (req, res) => {
-    const address = wallet.publicKey;
+app.post('/api/wallet-info', (req, res) => {
+    const { publicKey } = req.body;
+    const address = publicKey
     res.json({
         address,
         balance: Wallet.calculateBalance({ 

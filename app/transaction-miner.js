@@ -1,10 +1,10 @@
 const Transaction = require('../wallet/transaction');
 
 class TransactionMiner {
-    constructor({ blockchain, transactionPool, wallet, pubsub }) {
+    constructor({ blockchain, transactionPool, serverWallet, pubsub }) {
         this.blockchain = blockchain;
         this.transactionPool = transactionPool;
-        this.wallet = wallet;
+        this.wallet = serverWallet;
         this.pubsub = pubsub;
     }
     

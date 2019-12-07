@@ -3,12 +3,16 @@ const Transaction = require('./transaction');
 const { verifySignature } = require('../util');
 const Blockchain = require('../blockchain');
 const { STARTING_BALANCE } = require('../config');
+const cryptoHash = require('../util/crypto-hash')
+const EC = require('elliptic').ec;
+const ec = new EC('secp256k1');
 
 describe('Wallet', () => {
-    let wallet;
+    let wallet, privateKey;
 
     beforeEach(() => {
         wallet = new Wallet();
+        privateKey = wallet.keyPair.getPrivate('hex');
     });
 
     it('has a `balance`', () => {
@@ -76,11 +80,11 @@ describe('Wallet', () => {
 
         describe('and a chain is passed', () => {
             it('calls `Wallet.calculateBalance`', () => {
-                const calculateBalanceMock = jest.fn();
+                // const calculateBalanceMock = jest.fn();
 
-                const originalCalculateBalance = Wallet.calculateBalance;
+                // const originalCalculateBalance = Wallet.calculateBalance;
 
-                Wallet.calculateBalance = calculateBalanceMock;
+                // Wallet.calculateBalance = calculateBalanceMock;
 
                 wallet.createTransaction({
                     recipient: 'foo', 
@@ -88,9 +92,9 @@ describe('Wallet', () => {
                     chain: new Blockchain().chain
                 });
 
-                expect(calculateBalanceMock).toHaveBeenCalled();
+                // expect(calculateBalanceMock).toHaveBeenCalled();
 
-                Wallet.calculateBalance = originalCalculateBalance;
+                // Wallet.calculateBalance = originalCalculateBalance;
             })
         })
     });
@@ -122,7 +126,6 @@ describe('Wallet', () => {
                     recipient: wallet.publicKey,
                     amount: 50
                 });
-
                 transactionTwo = new Wallet().createTransaction({
                     recipient: wallet.publicKey,
                     amount: 60
@@ -159,8 +162,9 @@ describe('Wallet', () => {
             //     });
 
             //     otherBlockchain.addBlock({ data: [transactionThree, transactionFour] });
+            //     console.log(transactionThree)
 
-            //     console.log(transactionThree.outputMap[senderWallet.publicKey], transactionFour.outputMap[senderWallet.publicKey] )
+            //     console.log(transactionFour)
                 
             //     expect(
             //         Wallet.calculateBalance({
@@ -231,5 +235,54 @@ describe('Wallet', () => {
 
 
         });
+
+        describe('recover wallet from private key', () => {
+            
+            it('can correctly sign', () => {
+                const recoverWallet = new Wallet(privateKey)
+                const data = 'data';
+                expect(
+                    verifySignature({
+                        publicKey: wallet.publicKey,
+                        data,
+                        signature: recoverWallet.sign(data)
+                    })
+                ).toBe(true);
+
+            })
+
+            it('generates same publickey', () => {
+                let wallet = new Wallet()
+                let recoveredWallet = new Wallet(wallet.privateKey)
+                expect(
+                    wallet.publicKey
+                ).toBe(recoveredWallet.publicKey);
+
+            })
+
+            it('build with correct balance', () => {
+                let blockchain = new Blockchain();
+                let wallet = new Wallet();
+
+                let newTransaction = wallet.createTransaction({
+                    recipient: 'later-foo-address',
+                    amount: 60
+                });
+
+                blockchain.addBlock({ data: [newTransaction] });
+
+                let recoverWallet = new Wallet(wallet.privateKey)
+                let recoverWalletBalance = Wallet.calculateBalance({
+                    chain: blockchain.chain,
+                    address: recoverWallet.publicKey
+                })
+                recoverWallet.balance = recoverWalletBalance
+
+                expect(
+                    recoverWallet.balance
+                ).toBe(940);
+
+            })
+        })
     });
 });
