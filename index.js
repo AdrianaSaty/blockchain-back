@@ -44,11 +44,9 @@ app.get('/api/create-wallet', (req, res) => {
 app.post('/api/rebuild-wallet', (req, res) => {
     const { privateKey } = req.body;
     const wallet = new Wallet(privateKey)
-    let recoverWalletBalance = Wallet.calculateBalance({
+    wallet.rebuildBalance({
         chain: blockchain.chain,
-        address: wallet.publicKey
     })
-    wallet.balance = recoverWalletBalance
 
     res.json({
         privatekey: wallet.privateKey,
@@ -108,13 +106,16 @@ app.get('/api/mine-transactions', (req, res) => {
 
 app.post('/api/wallet-info', (req, res) => {
     const { publicKey } = req.body;
-    const address = publicKey
+    const inTransaction = transactionPool.amountInTransaction({ address: publicKey })
+
     res.json({
-        address,
+        address: publicKey,
         balance: Wallet.calculateBalance({ 
-            chain: blockchain.chain, address
-        })
+            chain: blockchain.chain, address: publicKey
+        }),
+        inTransaction
     })
+
 })
 
 const syncWithRootState = () => {

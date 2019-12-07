@@ -21,10 +21,11 @@ class Wallet {
 
     createTransaction( { recipient, amount, chain }) {
         if(chain) {
-            this.balance = Wallet.calculateBalance({
-                chain,
-                address: this.publicKey
-            });
+            // this.balance = Wallet.calculateBalance({
+            //     chain,
+            //     address: this.publicKey
+            // });
+            this.rebuildBalance({ chain })
         };
 
         if(amount > this.balance) {
@@ -32,6 +33,13 @@ class Wallet {
         }
 
         return new Transaction({ senderWallet: this, recipient, amount });
+    }
+
+    rebuildBalance({ chain }) {
+        this.balance = Wallet.calculateBalance({ 
+            chain, 
+            address: this.publicKey
+         })
     }
 
     static calculateBalance({ chain, address }) {
@@ -59,6 +67,7 @@ class Wallet {
 
         return hasConductedTransaction ? outputsTotal : STARTING_BALANCE + outputsTotal;
     }
+
 }
 
 module.exports = Wallet;
