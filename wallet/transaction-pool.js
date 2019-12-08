@@ -5,8 +5,16 @@ class TransactionPool {
         this.transactionMap = {};
     }
 
-    clear() {
-        this.transactionMap = {};
+    clear({ transactions }) {
+        console.log('CLEAR THESE TRANSACTIONS', transactions,'TRANSACTIONMAP', this.transactionMap)
+        for(let transaction of transactions) {
+            console.log(transaction.id)
+            if(this.transactionMap[transaction.id]) {
+                console.log('entrei', transaction.id)
+                delete this.transactionMap[transaction.id]
+                console.log('result clear transaction', transaction.id, this.transactionMap)
+            }
+        }
     }
 
     setTransaction(transaction) {
@@ -30,7 +38,6 @@ class TransactionPool {
             const sumOutputValues = Object.values(amountInTransaction.outputMap)
                 .filter((value, index) => outputAddresses[index] !== address)
                 .reduce((total, value) => total + value)
-            console.log('totalOutput', sumOutputValues)
             amountInTransaction.outputMap['totalOutput'] = sumOutputValues;
             return amountInTransaction.outputMap
         }

@@ -1,5 +1,5 @@
 const hexToBinary = require('hex-to-binary')
-const { GENESIS_DATA, MINE_RATE } = require('../config')
+const { GENESIS_DATA, MINE_RATE, NONCE_LIMIT } = require('../config')
 const { cryptoHash } = require('../util')
 
 class Block {
@@ -32,7 +32,7 @@ class Block {
         let nonce = 0;
 
         do {
-            nonce++;
+            nonce = Math.floor(Math.random()*NONCE_LIMIT);
             timestamp = Date.now();
             difficulty = Block.adjustDifficulty({ originalBlock: lastBlock, timestamp })
             hash = cryptoHash(timestamp, lastHash, data, nonce, difficulty)

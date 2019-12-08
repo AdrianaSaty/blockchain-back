@@ -98,7 +98,8 @@ app.get('/api/transaction-pool-map', (req, res) => {
     res.json(transactionPool.transactionMap)
 });
 
-app.get('/api/mine-transactions', (req, res) => {
+app.get('/api/mine-transactions', async (req, res) => {
+
     transactionMiner.mineTransactions();
 
     res.redirect('/api/blocks');

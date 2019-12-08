@@ -18,10 +18,13 @@ const REWARD_INPUT = {
 
 const MINING_REWARD = 50;
 
+const NONCE_LIMIT = 10000000;
+
 module.exports = { 
     GENESIS_DATA, 
     MINE_RATE, 
     STARTING_BALANCE,
     REWARD_INPUT,
-    MINING_REWARD
+    MINING_REWARD,
+    NONCE_LIMIT
  };
