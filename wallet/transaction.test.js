@@ -62,6 +62,12 @@ describe('Transaction', () => {
 
     });
 
+    describe('totalSpent()', () => {
+        it('returns total spend in transaction from address', () => {
+            expect(Transaction.totalSpent(transaction).total).toEqual(amount)
+        })
+    })
+
     describe('validTransaction()', () => {
         let errorMock;
 

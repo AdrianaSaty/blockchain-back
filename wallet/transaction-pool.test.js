@@ -35,6 +35,20 @@ describe('TransactionPool', () => {
         });
     });
 
+    describe('amountInTransaction()', () => {
+        it('returns correct amount in transaction', () => {
+            transactionPool.setTransaction(transaction)
+            const newTransaction = new Transaction({
+                senderWallet,
+                recipient: 'foo-recipient',
+                amount: 250 
+            });
+            transactionPool.setTransaction(newTransaction)
+            const amountInTransaction = transactionPool.amountInTransaction({ address: senderWallet.publicKey })
+            expect(amountInTransaction.total).toEqual(300)
+        })
+    })
+
     describe('validTransactions()', () => {
        let validTransactions, errorMock;
        

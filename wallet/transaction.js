@@ -10,18 +10,10 @@ class Transaction {
     }
 
     createOutputMap({ senderWallet, recipient, amount }) {
-        // const outputMap = {};
-
-        // outputMap[recipient] = amount;
-        // outputMap[senderWallet.publicKey] = senderWallet.balance - amount;
-
-        // return outputMap;
-
         const outputMap = {};
-        outputMap[recipient] = []
-        outputMap[senderWallet.publicKey] = [senderWallet.balance]
-        outputMap[recipient].push(amount);
-        outputMap[senderWallet.publicKey].push(-amount)
+
+        outputMap[recipient] = amount;
+        outputMap[senderWallet.publicKey] = senderWallet.balance - amount;
 
         return outputMap;
     }
@@ -50,6 +42,20 @@ class Transaction {
             this.outputMap[senderWallet.publicKey] - amount;
 
         this.input = this.createInput({ senderWallet, outputMap: this.outputMap })
+    }
+
+    static totalSpent(transaction) {
+        let totalSpent = 0;
+        const spentTransactionKeys = Object.keys(transaction.outputMap)
+        const spentTransactionMap = {}
+        Object.values(transaction.outputMap).forEach((value, index) => {
+            if(spentTransactionKeys[index] !== transaction.input.address){
+                totalSpent+=value;
+                spentTransactionMap[spentTransactionKeys[index]] = value
+            }
+        })
+        spentTransactionMap.total = totalSpent
+        return spentTransactionMap
     }
 
     static validTransaction(transaction) {

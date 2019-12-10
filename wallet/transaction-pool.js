@@ -5,16 +5,17 @@ class TransactionPool {
         this.transactionMap = {};
     }
 
-    clear({ transactions }) {
-        console.log('CLEAR THESE TRANSACTIONS', transactions,'TRANSACTIONMAP', this.transactionMap)
-        for(let transaction of transactions) {
-            console.log(transaction.id)
-            if(this.transactionMap[transaction.id]) {
-                console.log('entrei', transaction.id)
-                delete this.transactionMap[transaction.id]
-                console.log('result clear transaction', transaction.id, this.transactionMap)
-            }
-        }
+    clear() {
+        // console.log('CLEAR THESE TRANSACTIONS', transactions,'TRANSACTIONMAP', this.transactionMap)
+        // for(let transaction of transactions) {
+        //     console.log(transaction.id)
+        //     if(this.transactionMap[transaction.id]) {
+        //         console.log('entrei', transaction.id)
+        //         delete this.transactionMap[transaction.id]
+        //         console.log('result clear transaction', transaction.id, this.transactionMap)
+        //     }
+        // }
+        this.transactionMap = {}
     }
 
     setTransaction(transaction) {
@@ -32,15 +33,20 @@ class TransactionPool {
     }
 
     amountInTransaction({ address }) {
-        const amountInTransaction = this.existingTransaction({ inputAddress:address })
-        if(amountInTransaction) {
-            const outputAddresses = Object.keys(amountInTransaction.outputMap)
-            const sumOutputValues = Object.values(amountInTransaction.outputMap)
-                .filter((value, index) => outputAddresses[index] !== address)
-                .reduce((total, value) => total + value)
-            amountInTransaction.outputMap['totalOutput'] = sumOutputValues;
-            return amountInTransaction.outputMap
+        let transactionInPool = {};
+        let totalInTransaction = 0;
+        if(this.existingTransaction({ inputAddress:address })) {
+            Object.values(this.transactionMap).forEach((transaction) => {
+                if(transaction.input.address === address) {
+                    totalInTransaction += Transaction.totalSpent(transaction).total
+                    transactionInPool[transaction.id] = Transaction.totalSpent(transaction)
+                }
+            })
+            transactionInPool.total = totalInTransaction
+            return transactionInPool
         }
+        transactionInPool.total = 0
+        return transactionInPool
     }
 
     validTransactions() {
