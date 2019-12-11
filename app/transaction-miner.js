@@ -24,13 +24,7 @@ class TransactionMiner {
         this.pubsub.broadcastChain();
         
         //clear the pool
-        // this.transactionPool.clear({ transactions: validTransactions });
-        const teste = this.transactionPool;
-        setTimeout(function() {
-            teste.clear({ transactions: validTransactions })
-            console.log('legal')
-        }, 15000)
-        
+        this.transactionPool.clear({ transactions: validTransactions });
     }
     
     clearPool() {
