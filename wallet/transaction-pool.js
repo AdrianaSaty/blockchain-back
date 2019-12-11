@@ -5,17 +5,12 @@ class TransactionPool {
         this.transactionMap = {};
     }
 
-    clear() {
-        // console.log('CLEAR THESE TRANSACTIONS', transactions,'TRANSACTIONMAP', this.transactionMap)
-        // for(let transaction of transactions) {
-        //     console.log(transaction.id)
-        //     if(this.transactionMap[transaction.id]) {
-        //         console.log('entrei', transaction.id)
-        //         delete this.transactionMap[transaction.id]
-        //         console.log('result clear transaction', transaction.id, this.transactionMap)
-        //     }
-        // }
-        this.transactionMap = {}
+    clear({ transactions }) {
+        for(let transaction of transactions) {
+            if(this.transactionMap[transaction.id]) {
+                delete this.transactionMap[transaction.id]
+            }
+        }
     }
 
     setTransaction(transaction) {
@@ -47,6 +42,14 @@ class TransactionPool {
         }
         transactionInPool.total = 0
         return transactionInPool
+    }
+
+    findTransaction({ transactionId }) {
+        console.log(transactionId)
+        if(this.transactionMap[transactionId]) {
+            return true
+        }
+        return false
     }
 
     validTransactions() {

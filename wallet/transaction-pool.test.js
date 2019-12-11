@@ -86,10 +86,34 @@ describe('TransactionPool', () => {
     });
 
     describe('clear()', () => {
-        it('clears the transactions', () => {
-            transactionPool.clear();
+        // it('clears the transactions', () => {
+        //     transactionPool.clear();
 
-            expect(transactionPool.transactionMap).toEqual({});
+        //     expect(transactionPool.transactionMap).toEqual({});
+        // });
+
+        it('clears only transactions sent to blockchain', () => {
+            const blockchain = new Blockchain();
+            transactionPool.setTransaction(transaction)
+            
+            let newTransaction = senderWallet.createTransaction({
+                recipient: 'foo-address',
+                amount: 100
+            })
+            
+            let transactionTwo = senderWallet.createTransaction({
+                recipient: 'other-address',
+                amount: 90
+            })
+            
+            transactionPool.setTransaction(newTransaction)
+            let validTransactions = JSON.parse(JSON.stringify(transactionPool.validTransactions()));
+            transactionPool.setTransaction(transactionTwo)
+    
+            blockchain.addBlock({ data: validTransactions });
+            transactionPool.clear({ transactions: validTransactions });
+            expect(transactionPool.findTransaction({ transactionId: newTransaction.id })).toEqual(false);
+            expect(transactionPool.findTransaction({ transactionId: transactionTwo.id })).toEqual(true);
         });
     });
 
