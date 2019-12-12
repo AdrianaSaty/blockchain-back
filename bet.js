@@ -20,12 +20,23 @@ const playerWallet3 = new Wallet();
 const poolWallet = new Wallet();
 
 //mongoDB
+let matchId = uuid();
 let bettingPool = {
+    matchId,
+    homeTeam: 'team A',
+    awayTeam: 'team B',
+    //all other match info 
     wallet: {
         privateKey: poolWallet.privateKey, 
         publicKey: poolWallet.publicKey
     },
     bet: {}
+    //bet is another object with the structure
+    // bettingPool.bet[betId] = {
+    //     player: publicKey,
+    //     amount,
+    //     team
+    // }
 }
 
 //making bets
@@ -108,7 +119,7 @@ let validTransactions = JSON.parse(JSON.stringify(transactionPool.validTransacti
 blockchain.addBlock({ data: validTransactions })
 // console.log('blockchain', blockchain.chain[1].data)
 
-//every wallet is starting with 1000, to change to 0 we just need to change config.js, here I`m only subtracting 1000
+//every wallet is starting with 1000, to change to 0 we just need to change config.js, here I`m only subtracting 1000 instead
 poolWalletBalance = Wallet.calculateBalance({ 
     chain: blockchain.chain, address: poolWallet.publicKey,
 }) - 1000
@@ -117,6 +128,7 @@ console.log('betPool balance', poolWalletBalance )
 
 //Suppose Team A wins
 const winnerTeam = 'A'
+console.log('Match', bettingPool)
 const bettingPoolBets = Object.values(bettingPool.bet)
 // console.log(bettingPoolBets)
 //calculates the sum of all winning bets
@@ -125,10 +137,10 @@ bettingPoolBets.filter((bet) => bet.team === winnerTeam).forEach((bet) => {
     winnerPool += bet.amount
 })
 
+//calculate won amount based on how much player bets in relation to winners pool and distribute prize
 bettingPoolBets.forEach((bet) => {
     // console.log('eachBet', bet)
     if(bet.team === winnerTeam){
-        //calculate won amount based on how much player bets in relation to winners pool
         const amountWon = (bet.amount/winnerPool)*poolWalletBalance
         distributePrize({ publicKey: bet.player, amount: amountWon})
     }
