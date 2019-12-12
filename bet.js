@@ -102,7 +102,7 @@ makeBet({
 // console.log('bettingPool in Mongo', bettingPool)
 // console.log('pool in blockchain, before mining', transactionPool.transactionMap)
 
-//TO RUN THIS PART JUST USE 
+//to mine use:
 //https://blotting.herokuapp.com/api/mine-transactions (TO IMPLEMENT CONTINUOUS MINING, SHOULD NOT BE NECESSARY TO CALL)
 let validTransactions = JSON.parse(JSON.stringify(transactionPool.validTransactions()));
 blockchain.addBlock({ data: validTransactions })
