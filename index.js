@@ -47,11 +47,13 @@ app.post('/api/rebuild-wallet', (req, res) => {
     wallet.rebuildBalance({
         chain: blockchain.chain,
     })
+    const inTransaction = transactionPool.amountInTransaction({ address: wallet.publicKey })
 
     res.json({
         privatekey: wallet.privateKey,
         publicKey: wallet.publicKey,
-        balance: wallet.balance
+        balance: wallet.balance,
+        inTransaction
     })
 });
 
@@ -113,7 +115,7 @@ app.post('/api/wallet-info', (req, res) => {
     res.json({
         address: publicKey,
         balance: Wallet.calculateBalance({ 
-            chain: blockchain.chain, address: publicKey
+            chain: blockchain.chain, address: publicKey,
         }),
         inTransaction
     })
