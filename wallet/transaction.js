@@ -65,12 +65,12 @@ class Transaction {
             .reduce((total, outputAmount) => total + outputAmount);
 
         if (amount !== outputTotal) {
-            console.error(`Invalid transaction from ${address}`);
+            console.error(`Invalid transaction from ${address} amount different than output`, outputMap, amount);
             return false;
         }
 
         if(!verifySignature({ publicKey: address, data: outputMap, signature })) {
-            console.error(`Invalid signature ${address}`);
+            console.error(`Invalid signature ${address} signature not verified`);
             return false;
         }
 

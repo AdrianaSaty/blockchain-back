@@ -71,6 +71,9 @@ app.post('/api/transact', (req, res) => {
     const { amount, recipient, privateKey } = req.body;
 
     const wallet = new Wallet(privateKey)
+    wallet.rebuildBalance({
+        chain: blockchain.chain,
+    })
 
     let transaction = transactionPool
         .existingTransaction({ inputAddress: wallet.publicKey });
