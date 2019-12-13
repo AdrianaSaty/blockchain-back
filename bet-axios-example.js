@@ -32,17 +32,17 @@ async function mainFunction() {
     //MAKING BETS
     //I`m identifying players ID by name instead of ID to simplify, but should be replaced by Id
     //FER
+    // let bet = await makeBet({
+    //     match: 'AxB', 
+    //     playerBetting:'Fer', 
+    //     team: 'A', 
+    //     amount: 100
+    // })
+
     let bet = await makeBet({
         match: 'AxB', 
         playerBetting:'Fer', 
         team: 'A', 
-        amount: 100
-    })
-
-    bet = await makeBet({
-        match: 'AxB', 
-        playerBetting:'Fer', 
-        team: 'B', 
         amount: 200
     })
 
@@ -66,11 +66,21 @@ async function mainFunction() {
         match: 'AxB', 
         playerBetting:'Dan', 
         team: 'B', 
-        amount: 100
+        amount: 200
     })
     
     //this function will not be necessary to be called in actual program
     let blockMined = await mineBlock();
+
+    //FER
+    bet = await makeBet({
+        match: 'AxB', 
+        playerBetting:'Fer', 
+        team: 'B', 
+        amount: 100
+    })
+
+    blockMined = await mineBlock();
 
     //checking wallet balances
     let totalBalance = await checkingAllBalances();
@@ -200,9 +210,10 @@ async function distributePrize({ match, winner }) {
         if(bet.team === winner) {
             distribuction = await createTransaction({ 
                 recipient: bet.player, 
-                amount: (bet.amount/sumOfWinningBets)*totalPoolPrize, 
+                amount: Math.round((bet.amount/sumOfWinningBets)*totalPoolPrize), 
                 privateKey: matchDB[match].wallet.privateKey
             })
+            // console.log(userDB, bet.team, bet.player,(bet.amount/sumOfWinningBets)*totalPoolPrize )
         }
         return distribuction
     })
