@@ -23,10 +23,6 @@ class Wallet {
     createTransaction( { recipient, amount, chain, transactionPool }) {
         let amountInPool = 0;
         if(chain) {
-            // this.balance = Wallet.calculateBalance({
-            //     chain,
-            //     address: this.publicKey
-            // });
             this.rebuildBalance({ chain })
         };
 
@@ -55,7 +51,6 @@ class Wallet {
         
         for( let i=chain.length-1; i>0; i--) {
             const block = chain[i];
-            // console.log('block', block.data, 'addresss', address)
 
             for(let transaction of block.data) {
 

@@ -83,7 +83,6 @@ class Blockchain {
                 }
             }
         }
-        console.log('sucesso')
         return true;
     }
 

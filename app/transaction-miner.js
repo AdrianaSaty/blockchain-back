@@ -27,9 +27,6 @@ class TransactionMiner {
         this.transactionPool.clear({ transactions: validTransactions });
     }
     
-    clearPool() {
-        
-    }
 }
 
 module.exports = TransactionMiner;

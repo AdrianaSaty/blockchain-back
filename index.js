@@ -26,6 +26,12 @@ const pubsub = new PubSub({ blockchain, transactionPool, redisUrl: REDIS_URL });
 let serverWallet = new Wallet();
 const transactionMiner = new TransactionMiner({ blockchain, transactionPool, serverWallet, pubsub });
 
+setInterval(() => {
+    if(Object.values(transactionPool.transactionMap).length >= 1) {
+        transactionMiner.mineTransactions();
+    }
+}, 5000);
+
 app.use(bodyParser.json());
 
 app.get('/api/blocks', (req, res) => {
