@@ -16,6 +16,10 @@ const REWARD_INPUT = {
     address: '*authorized-reward*'
 };
 
+const LOAD_BALANCE = {
+    address: '*authorized-load'
+}
+
 const MINING_REWARD = 50;
 
 const NONCE_LIMIT = 10000000;
@@ -26,5 +30,6 @@ module.exports = {
     STARTING_BALANCE,
     REWARD_INPUT,
     MINING_REWARD,
+    LOAD_BALANCE,
     NONCE_LIMIT
  };

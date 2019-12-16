@@ -1,6 +1,6 @@
 const uuid = require('uuid/v1');
 const { verifySignature } = require('../util');
-const { REWARD_INPUT, MINING_REWARD } = require('../config');
+const { REWARD_INPUT, MINING_REWARD, LOAD_BALANCE } = require('../config');
 
 class Transaction {
     constructor({ senderWallet, recipient, amount, outputMap, input}) {
@@ -61,8 +61,13 @@ class Transaction {
     static validTransaction(transaction) {
         const { input: {address, amount, signature}, outputMap } = transaction;
 
+        if(address === LOAD_BALANCE.address) {
+            return true
+        }
+
         const outputTotal = Object.values(outputMap)
             .reduce((total, outputAmount) => total + outputAmount);
+
 
         if (amount !== outputTotal) {
             console.error(`Invalid transaction from ${address} amount different than output`, outputMap, amount);
@@ -81,6 +86,13 @@ class Transaction {
         return new this({
             input: REWARD_INPUT,
             outputMap: { [minerWallet.publicKey]: MINING_REWARD }
+        })
+    }
+
+    static loadBalance({ publicKey, amount }) {
+        return new this({
+            input: LOAD_BALANCE,
+            outputMap: { [publicKey]: amount }
         })
     }
 }

@@ -58,22 +58,24 @@ class Blockchain {
                         console.error('Miner reward exceed limit');
                         return false;
                     }
+                } else if(transaction.input.address === LOAD_BALANCE.address) {
+                    //add check in paypal transaction
                 } else {
                     if(!Transaction.validTransaction(transaction)) {
                         console.error('Invalid transaction');
                         return false;
                     }
-
+        
                     const trueBalance = Wallet.calculateBalance({
                         chain: this.chain,
                         address: transaction.input.address
                     });
-
+        
                     if(transaction.input.amount !== trueBalance) {
                         console.error('Invalid input amount')
                         return false;
                     }
-
+        
                     if(transactionSet.has(transaction)) {
                         console.error('An identical transaction appears more than once in the block');
                         return false;

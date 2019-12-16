@@ -3,6 +3,7 @@ const request = require('request');
 const bodyParser = require('body-parser');
 const Blockchain = require('./blockchain');
 const PubSub = require('./app/pubsub');
+const Transaction = require('./wallet/transaction');
 const TransactionPool = require('./wallet/transaction-pool');
 const Wallet = require('./wallet');
 const TransactionMiner = require('./app/transaction-miner');
@@ -128,6 +129,18 @@ app.post('/api/wallet-info', (req, res) => {
         }),
         inTransaction
     })
+
+})
+
+app.post('/api/load-balance', (req, res) => {
+    const { publicKey, amount } = req.body;
+    const transaction = Transaction.loadBalance({ publicKey, amount })
+
+    transactionPool.setTransaction(transaction)
+
+    pubsub.broadcastTransaction(transaction);
+
+    res.json({ type: 'success', transaction });
 
 })
 
