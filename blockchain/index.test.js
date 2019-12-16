@@ -3,6 +3,7 @@ const Block = require('./block');
 const cryptoHash = require('../util/crypto-hash');
 const Wallet = require('../wallet');
 const Transaction = require('../wallet/transaction');
+const TransactionPool = require('../wallet/transaction-pool')
 
 describe('Blockchain', () => {
     let blockchain, newChain, originalChain, errorMock;
@@ -10,6 +11,7 @@ describe('Blockchain', () => {
     beforeEach(() => {
         blockchain = new Blockchain();
         newChain = new Blockchain();
+        transactionPool = new TransactionPool();
         errorMock = jest.fn();
         
         originalChain = blockchain.chain;
@@ -175,7 +177,7 @@ describe('Blockchain', () => {
 
         beforeEach(() => {
             wallet = new Wallet();
-            transaction = wallet.createTransaction({ recipient: 'foo-address', amount: 65 });
+            transaction = wallet.createTransaction({ recipient: 'foo-address', amount: 65, transactionPool });
             rewardTransaction = Transaction.rewardTransaction({ minerWallet: wallet });
         });
 

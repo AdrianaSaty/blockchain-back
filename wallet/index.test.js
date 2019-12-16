@@ -2,16 +2,19 @@ const Wallet = require('./index');
 const Transaction = require('./transaction');
 const { verifySignature } = require('../util');
 const Blockchain = require('../blockchain');
+const TransactionPool = require('./transaction-pool')
 const { STARTING_BALANCE } = require('../config');
 const cryptoHash = require('../util/crypto-hash')
 const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
+
 
 describe('Wallet', () => {
     let wallet, privateKey;
 
     beforeEach(() => {
         wallet = new Wallet();
+        transactionPool = new TransactionPool();
         privateKey = wallet.keyPair.getPrivate('hex');
     });
 
@@ -51,7 +54,16 @@ describe('Wallet', () => {
     describe('createTransaction()', () => {
         describe('and the amount exceeds the balance', () => {
             it('throws an error', () => {
-                expect(() => wallet.createTransaction({ amount: 999999, recipient: 'foo-recipient'}))
+                expect(() => wallet.createTransaction({ amount: 999999, recipient: 'foo-recipient', transactionPool}))
+                    .toThrow('Amount exceeds balance')
+            })
+        });
+
+        describe('and the amount exceeds the balance adding `transactionPool`', () => {
+            it('throws an error', () => {
+                const transaction = wallet.createTransaction({amount: 910, recipient: 'foo-recipient', transactionPool})
+                transactionPool.setTransaction(transaction)
+                expect(() => wallet.createTransaction({amount: 100, recipient: 'other-recipient', transactionPool}))
                     .toThrow('Amount exceeds balance')
             })
         });
@@ -62,7 +74,7 @@ describe('Wallet', () => {
             beforeEach(() => {
                 amount = 50;
                 recipient = 'foo-recipient';
-                transaction = wallet.createTransaction({ amount, recipient });
+                transaction = wallet.createTransaction({ amount, recipient, transactionPool });
             })
     
             it('creates an instance of `Transaction`', () => {
@@ -147,35 +159,34 @@ describe('Wallet', () => {
                 );
             });
 
-            // it('calculates final balance from the sending wallet', () => {
-            //     const otherWallet = new Wallet();
-            //     const senderWallet = new Wallet();
+            it('calculates final balance from the sending wallet', () => {
+                const otherWallet = new Wallet();
+                const senderWallet = new Wallet();
 
-            //     transactionThree = senderWallet.createTransaction({
-            //         recipient: otherWallet.publicKey,
-            //         amount: 10
-            //     });
+                transactionThree = senderWallet.createTransaction({
+                    recipient: otherWallet.publicKey,
+                    amount: 10,
+                    transactionPool
+                });
 
-            //     transactionFour = senderWallet.createTransaction({
-            //         recipient: otherWallet.publicKey,
-            //         amount: 15
-            //     });
+                transactionFour = senderWallet.createTransaction({
+                    recipient: otherWallet.publicKey,
+                    amount: 15,
+                    transactionPool
+                });
 
-            //     otherBlockchain.addBlock({ data: [transactionThree, transactionFour] });
-            //     console.log(transactionThree)
-
-            //     console.log(transactionFour)
+                otherBlockchain.addBlock({ data: [transactionThree, transactionFour] });
                 
-            //     expect(
-            //         Wallet.calculateBalance({
-            //             chain: otherBlockchain.chain,
-            //             address: senderWallet.publicKey
-            //         })
-            //     ).toEqual(
-            //         STARTING_BALANCE -
-            //         10 - 15 
-            //     )
-            // })
+                expect(
+                    Wallet.calculateBalance({
+                        chain: otherBlockchain.chain,
+                        address: senderWallet.publicKey
+                    })
+                ).toEqual(
+                    STARTING_BALANCE -
+                    10 - 15 
+                )
+            })
 
             describe('and the wallet has made a transaction', () => {
                 let recentTransaction;

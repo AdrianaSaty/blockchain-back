@@ -3,6 +3,7 @@ const request = require('request');
 const bodyParser = require('body-parser');
 const Blockchain = require('./blockchain');
 const PubSub = require('./app/pubsub');
+const Transaction = require('./wallet/transaction');
 const TransactionPool = require('./wallet/transaction-pool');
 const Wallet = require('./wallet');
 const TransactionMiner = require('./app/transaction-miner');
@@ -26,6 +27,12 @@ const pubsub = new PubSub({ blockchain, transactionPool, redisUrl: REDIS_URL });
 let serverWallet = new Wallet();
 const transactionMiner = new TransactionMiner({ blockchain, transactionPool, serverWallet, pubsub });
 
+setInterval(() => {
+    if(Object.values(transactionPool.transactionMap).length >= 1) {
+        transactionMiner.mineTransactions();
+    }
+}, 5000);
+
 app.use(bodyParser.json());
 
 app.get('/api/blocks', (req, res) => {
@@ -44,16 +51,16 @@ app.get('/api/create-wallet', (req, res) => {
 app.post('/api/rebuild-wallet', (req, res) => {
     const { privateKey } = req.body;
     const wallet = new Wallet(privateKey)
-    let recoverWalletBalance = Wallet.calculateBalance({
+    wallet.rebuildBalance({
         chain: blockchain.chain,
-        address: wallet.publicKey
     })
-    wallet.balance = recoverWalletBalance
+    const inTransaction = transactionPool.amountInTransaction({ address: wallet.publicKey })
 
     res.json({
         privatekey: wallet.privateKey,
         publicKey: wallet.publicKey,
-        balance: wallet.balance
+        balance: wallet.balance,
+        inTransaction
     })
 });
 
@@ -71,6 +78,9 @@ app.post('/api/transact', (req, res) => {
     const { amount, recipient, privateKey } = req.body;
 
     const wallet = new Wallet(privateKey)
+    wallet.rebuildBalance({
+        chain: blockchain.chain,
+    })
 
     let transaction = transactionPool
         .existingTransaction({ inputAddress: wallet.publicKey });
@@ -82,7 +92,8 @@ app.post('/api/transact', (req, res) => {
             transaction = wallet.createTransaction({ 
                 recipient,
                 amount, 
-                chain: blockchain.chain
+                chain: blockchain.chain,
+                transactionPool
             });
         }
     } catch(error) {
@@ -100,7 +111,8 @@ app.get('/api/transaction-pool-map', (req, res) => {
     res.json(transactionPool.transactionMap)
 });
 
-app.get('/api/mine-transactions', (req, res) => {
+app.get('/api/mine-transactions', async (req, res) => {
+
     transactionMiner.mineTransactions();
 
     res.redirect('/api/blocks');
@@ -108,13 +120,28 @@ app.get('/api/mine-transactions', (req, res) => {
 
 app.post('/api/wallet-info', (req, res) => {
     const { publicKey } = req.body;
-    const address = publicKey
+    const inTransaction = transactionPool.amountInTransaction({ address: publicKey })
+
     res.json({
-        address,
+        address: publicKey,
         balance: Wallet.calculateBalance({ 
-            chain: blockchain.chain, address
-        })
+            chain: blockchain.chain, address: publicKey,
+        }),
+        inTransaction
     })
+
+})
+
+app.post('/api/load-balance', (req, res) => {
+    const { publicKey, amount } = req.body;
+    const transaction = Transaction.loadBalance({ publicKey, amount })
+
+    transactionPool.setTransaction(transaction)
+
+    pubsub.broadcastTransaction(transaction);
+
+    res.json({ type: 'success', transaction });
+
 })
 
 const syncWithRootState = () => {

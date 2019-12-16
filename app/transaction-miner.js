@@ -10,7 +10,7 @@ class TransactionMiner {
     
     mineTransactions() {
         //get the transaction pool`s valid transactions
-        const validTransactions = this.transactionPool.validTransactions();
+        let validTransactions = JSON.parse(JSON.stringify(this.transactionPool.validTransactions()));
 
         //generate the miner`s reward
         validTransactions.push(
@@ -22,10 +22,11 @@ class TransactionMiner {
 
         //broadcast the updated blockchain
         this.pubsub.broadcastChain();
-
+        
         //clear the pool
-        this.transactionPool.clear();
+        this.transactionPool.clear({ transactions: validTransactions });
     }
+    
 }
 
 module.exports = TransactionMiner;

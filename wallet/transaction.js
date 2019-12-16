@@ -1,6 +1,6 @@
 const uuid = require('uuid/v1');
 const { verifySignature } = require('../util');
-const { REWARD_INPUT, MINING_REWARD } = require('../config');
+const { REWARD_INPUT, MINING_REWARD, LOAD_BALANCE } = require('../config');
 
 class Transaction {
     constructor({ senderWallet, recipient, amount, outputMap, input}) {
@@ -44,19 +44,38 @@ class Transaction {
         this.input = this.createInput({ senderWallet, outputMap: this.outputMap })
     }
 
+    static totalSpent(transaction) {
+        let totalSpent = 0;
+        const spentTransactionKeys = Object.keys(transaction.outputMap)
+        const spentTransactionMap = {}
+        Object.values(transaction.outputMap).forEach((value, index) => {
+            if(spentTransactionKeys[index] !== transaction.input.address){
+                totalSpent+=value;
+                spentTransactionMap[spentTransactionKeys[index]] = value
+            }
+        })
+        spentTransactionMap.total = totalSpent
+        return spentTransactionMap
+    }
+
     static validTransaction(transaction) {
         const { input: {address, amount, signature}, outputMap } = transaction;
+
+        if(address === LOAD_BALANCE.address) {
+            return true
+        }
 
         const outputTotal = Object.values(outputMap)
             .reduce((total, outputAmount) => total + outputAmount);
 
+
         if (amount !== outputTotal) {
-            console.error(`Invalid transaction from ${address}`);
+            console.error(`Invalid transaction from ${address} amount different than output`, outputMap, amount);
             return false;
         }
 
         if(!verifySignature({ publicKey: address, data: outputMap, signature })) {
-            console.error(`Invalid signature ${address}`);
+            console.error(`Invalid signature ${address} signature not verified`);
             return false;
         }
 
@@ -67,6 +86,13 @@ class Transaction {
         return new this({
             input: REWARD_INPUT,
             outputMap: { [minerWallet.publicKey]: MINING_REWARD }
+        })
+    }
+
+    static loadBalance({ publicKey, amount }) {
+        return new this({
+            input: LOAD_BALANCE,
+            outputMap: { [publicKey]: amount }
         })
     }
 }
