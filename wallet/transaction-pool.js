@@ -29,23 +29,42 @@ class TransactionPool {
 
     amountInTransaction({ address }) {
         let transactionInPool = {};
-        let totalInTransaction = 0;
-        if(this.existingTransaction({ inputAddress:address })) {
-            Object.values(this.transactionMap).forEach((transaction) => {
-                if(transaction.input.address === address) {
-                    totalInTransaction += Transaction.totalSpent(transaction).total
-                    transactionInPool[transaction.id] = Transaction.totalSpent(transaction)
-                }
-            })
-            transactionInPool.total = totalInTransaction
-            return transactionInPool
-        }
-        transactionInPool.total = 0
+        transactionInPool.spent = {};
+        transactionInPool.receive = {};
+        let totalToSpend = 0;
+        let totalToReceive = 0;
+  
+        // if(this.existingTransaction({ inputAddress:address })) {
+        //     Object.values(this.transactionMap).forEach((transaction) => {
+        //         if(transaction.input.address === address) {
+        //             totalInTransaction += Transaction.totalSpent(transaction).total
+        //             transactionInPool[transaction.id] = Transaction.totalSpent(transaction)
+        //         }
+        //     })
+        //     transactionInPool.total = totalInTransaction
+        //     return transactionInPool
+        // }
+        // transactionInPool.total = 0
+
+        Object.values(this.transactionMap).forEach((transaction) => {
+            if(transaction.input.address === address) {
+                totalToSpend += Transaction.totalSpent(transaction).total
+                transactionInPool.spent[transaction.id] = Transaction.totalSpent(transaction)
+            } else {
+                let transactionOutputKeys = Object.keys(transaction.outputMap)
+                Object.values(transaction.outputMap).forEach((amount, index) => {
+                    if(transactionOutputKeys[index] === address) {
+                        totalToReceive += amount
+                    }
+                })
+            }
+        })
+        transactionInPool.receive.total = totalToReceive;
+        transactionInPool.spent.total = totalToSpend;
         return transactionInPool
     }
 
     findTransaction({ transactionId }) {
-        console.log(transactionId)
         if(this.transactionMap[transactionId]) {
             return true
         }

@@ -45,7 +45,7 @@ describe('TransactionPool', () => {
             });
             transactionPool.setTransaction(newTransaction)
             const amountInTransaction = transactionPool.amountInTransaction({ address: senderWallet.publicKey })
-            expect(amountInTransaction.total).toEqual(300)
+            expect(amountInTransaction.spent.total).toEqual(300)
         })
     })
 
