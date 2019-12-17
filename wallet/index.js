@@ -27,7 +27,8 @@ class Wallet {
         };
 
         if(transactionPool) {
-            amountInPool = transactionPool.amountInTransaction({ address: this.publicKey }).total
+            amountInPool = transactionPool.amountInTransaction({ address: this.publicKey }).spent.total
+            console.log(amountInPool)
         }
 
 

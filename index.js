@@ -104,7 +104,13 @@ app.post('/api/transact', (req, res) => {
 
     pubsub.broadcastTransaction(transaction);
 
-    res.json({ type: 'success', transaction });
+    const inTransaction = transactionPool.amountInTransaction({ address: wallet.publicKey })
+
+    const balance = Wallet.calculateBalance({ 
+        chain: blockchain.chain, address: wallet.publicKey,
+    })
+
+    res.json({ type: 'success', balance, inTransaction, transaction });
 });
 
 app.get('/api/transaction-pool-map', (req, res) => {
